@@ -7,11 +7,6 @@ public class Main {
         return rand.nextInt((max - min) + 1) + min;
     }
 
-    public static void imprimeListaDePalpites(String listaPalpite) {
-        System.out.println("Lista de palpites:");
-        System.out.println(listaPalpite);
-    }
-
     public static int[] getQtdTirosEmoscas(String numeroAlvoString, String palpiteString) {
         int qtdTiros = 0;
         int qtdMoscas = 0;
@@ -56,7 +51,7 @@ public class Main {
             while (continuaPartida != 1) {
                 qtdRodadas++;
                 System.out.print("\n");
-                System.out.print("Informe seu palpite: ");
+                System.out.print("Informe seu palpite (numero de 3 dígitos): ");
                 String palpiteString = String.valueOf(scan.nextInt());
 
                 int[] tirosEmoscas = getQtdTirosEmoscas(numeroAlvoString, palpiteString);
@@ -64,7 +59,8 @@ public class Main {
                 int qtdMoscas = tirosEmoscas[1];
 
                 listaPalpite += palpiteString + " - " + qtdTiros + "T" + qtdMoscas + "M\n";
-                imprimeListaDePalpites(listaPalpite);
+                System.out.println("Lista de palpites:");
+                System.out.println(listaPalpite);
 
                 if (qtdMoscas == 3) {
                     System.out.println("Numero acertado!");
@@ -77,20 +73,24 @@ public class Main {
         }
     }
 
+    public static void iniciarJogo2jogadores(Scanner scan) {
+        // TODO
+    }
+
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
+        System.out.println("Bem vindo ao jogo Tiro e Mosca :)");
+        System.out.println("Desenvolvido com carinho por Victor Gabriel e Yuri Ribeiro.");
         System.out.println("0 - Jogo individual");
         System.out.println("1 - 2 jogadores");
         System.out.print("Digite o modo de jogo: ");
         int modoDeJogo = scan.nextInt();
 
-        switch (modoDeJogo) {
-            case 0:
-                iniciarJogoIndividual(scan);
-            case 1:
-                // TODO
+        if (modoDeJogo == 0) {
+            iniciarJogoIndividual(scan);
+        } else if (modoDeJogo == 1) {
+            iniciarJogo2jogadores(scan);
         }
-
     }
 }
