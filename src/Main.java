@@ -59,6 +59,7 @@ public class Main {
                 int qtdMoscas = tirosEmoscas[1];
 
                 listaPalpite += palpiteString + " - " + qtdTiros + "T" + qtdMoscas + "M\n";
+
                 System.out.println("Lista de palpites:");
                 System.out.println(listaPalpite);
 

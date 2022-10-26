@@ -1,23 +1,21 @@
 package socketserver.tcp;
 
-import socketserver.NetworkListener;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
-public class TrataConexao implements Runnable {
+public class TrataConexao {
 
-    private Socket connection;
+    private final Socket connection;
     private DataInputStream dis = null;
     private DataOutputStream dos = null;
-    private NetworkListener nl;
 
-    public TrataConexao(Socket conn, NetworkListener nl) {
+    public TrataConexao(Socket conn) {
         this.connection = conn;
-        this.nl = nl;
     }
 
     public int getRandomNumberBetween(int min, int max) {
@@ -42,66 +40,123 @@ public class TrataConexao implements Runnable {
         return new int[]{qtdTiros, qtdMoscas};
     }
 
-    private int getPalpiteFromCliente() throws IOException {
+    private int recebePalpite() throws IOException {
         System.out.println("Aguardando palpite do cliente");
         System.out.flush();
         return dis.readInt();
     }
 
-    private void sendTirosAndMoscasQtdToClient(int qtdTiros, int qtdMoscas) throws IOException {
-        dos.writeInt(qtdTiros);
-        dos.flush();
-        System.out.println("O servidor enviou a quantidade de tiros");
-        System.out.flush();
-
-        dos.writeInt(qtdMoscas);
-        dos.flush();
-        System.out.println("O servidor enviou a quantidade de moscas");
-        System.out.flush();
-    }
-
     private void prepareServerForIndividualGame() throws IOException {
-//        String numeroAlvoString = String.valueOf(getRandomNumberBetween(100, 999));
-        String numeroAlvoString = String.valueOf(100);
+        int opcao = 0;
+        Map<Integer, Integer> numerosAcertadosMap = new HashMap<>();
+        String nickName = recebeNickName();
 
-        int palpite = getPalpiteFromCliente();
-        int[] tirosEmoscas = getQtdTirosEmoscas(numeroAlvoString, String.valueOf(palpite));
-        int qtdTiros = tirosEmoscas[0];
-        int qtdMoscas = tirosEmoscas[1];
-        sendTirosAndMoscasQtdToClient(qtdTiros, qtdMoscas);
+        while (opcao != 2) {
+            int qtdRodadas = 0;
+            int continuaPartida = 0;
+            String listaPalpite = "";
+//            String numeroAlvoString = String.valueOf(getRandomNumberBetween(100, 999));
+            String numeroAlvoString = String.valueOf(100);
+
+            while (continuaPartida != 2) {
+                qtdRodadas++;
+                int palpite = recebePalpite();
+
+                int[] tirosEmoscas = getQtdTirosEmoscas(numeroAlvoString, String.valueOf(palpite));
+                int qtdTiros = tirosEmoscas[0];
+                int qtdMoscas = tirosEmoscas[1];
+                listaPalpite += palpite + " - " + qtdTiros + "T" + qtdMoscas + "M\n";
+
+                int resultado = mandaResultado(qtdMoscas, qtdRodadas, listaPalpite, nickName);
+                if (resultado == 200) {
+                    continuaPartida = 2;
+                    numerosAcertadosMap.put(Integer.valueOf(numeroAlvoString), qtdRodadas);
+                } else continuaPartida = getContinuaPartidaFromCliente();
+
+                while (continuaPartida == 1) {
+                    retornaNumerosAcertados(numerosAcertadosMap);
+                    continuaPartida = getContinuaPartidaFromCliente();
+                }
+
+            }
+            opcao = getContinuaJogoFromCliente();
+            while (opcao == 1) {
+                retornaNumerosAcertados(numerosAcertadosMap);
+                opcao = getContinuaJogoFromCliente();
+            }
+        }
     }
 
-    private void prepareServerForMultiplayerGame() {
+    private void retornaNumerosAcertados(Map<Integer, Integer> numerosAcertadosMap) throws IOException {
+        final String[] listaNumerosAcertados = {""};
+        numerosAcertadosMap.forEach((numero, rodadas) -> {
+            listaNumerosAcertados[0] += "Numero: " + numero + " | QtdRodadas: " + rodadas + "\n";
+        });
+        if (!listaNumerosAcertados[0].isEmpty()) {
+            dos.writeUTF(listaNumerosAcertados[0]);
+            System.out.println("O servidor enviou a lista de números acertados para o cliente");
+        } else {
+            dos.writeUTF("Nenhum número acertado até o momento :(");
+            System.out.println("O servidor informou que não há números acertados até o momento para o cliente");
+        }
     }
 
-    @Override
+    private String recebeNickName() throws IOException {
+        System.out.println("Aguardando nickname do cliente");
+        System.out.flush();
+        return dis.readUTF();
+    }
+
+    private int getContinuaJogoFromCliente() throws IOException {
+        System.out.println("Aguardando opção de jogo do cliente");
+        System.out.flush();
+        return dis.readInt();
+    }
+
+    private int getContinuaPartidaFromCliente() throws IOException {
+        System.out.println("Aguardando opção de continuar partida do cliente");
+        System.out.flush();
+        return dis.readInt();
+    }
+
+    private int mandaResultado(int qtdMoscas, int qtdRodadas, String listaPalpite, String nickname) throws IOException {
+        int resultado;
+
+        if (qtdMoscas == 3) {
+            resultado = 200;
+            dos.writeInt(resultado);
+            System.out.println("O servidor enviou o resultado para o cliente");
+
+            dos.writeUTF("Parabéns " + nickname + "! Número acertado!\n" + "Você levou " + qtdRodadas + " rodada(s) para acertar.");
+            System.out.println("O servidor identificou o vencedor e enviou para o cliente");
+        } else {
+            resultado = 100;
+            dos.writeInt(resultado);
+            System.out.println("O servidor enviou o resultado para o cliente");
+
+            dos.writeUTF(listaPalpite);
+            System.out.println("O servidor enviou a lista de palpites para o cliente");
+        }
+        return resultado;
+    }
+
     public void run() {
         try {
-            System.out.println("");
-            System.out.println("Obtendo dos streams");
+            System.out.print("\n");
+            System.out.println("Configurando streams");
             System.out.flush();
             dos = new DataOutputStream(connection.getOutputStream());
             dis = new DataInputStream(connection.getInputStream());
 
-            System.out.println("Aguardando opção de jogo do cliente");
-            int gameOption = dis.readInt();
+            prepareServerForIndividualGame();
 
-            if (gameOption == 0) {
-                prepareServerForIndividualGame();
-            } else if (gameOption == 1) {
-                prepareServerForMultiplayerGame();
-            }
-
-            //Finalização dos Streams de comunicação e da conexão
             if (dis != null) {
                 dis.close();
             }
             if (dos != null) {
                 dos.close();
             }
-            if (connection != null) {
-                connection.close();
-            }
+            connection.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

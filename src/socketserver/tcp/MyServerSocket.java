@@ -7,19 +7,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class MyServerSocket implements Runnable {
+public class MyServerSocket {
 
     private boolean connected = false;
     private ServerSocket serverSocket = null;
-    private Socket connection = null;
-    private TrataConexao trata = null;
     private NetworkListener nl;
 
     public MyServerSocket(NetworkListener nl) {
         this.nl = nl;
     }
 
-    @Override
     public void run() {
         try {
             serverSocket = new ServerSocket(AppConstants.SERVER_PORT);
@@ -27,11 +24,10 @@ public class MyServerSocket implements Runnable {
             System.out.println("Esperando por conexões na porta " + AppConstants.SERVER_PORT);
             connected = true;
             while (connected) {
-                connection = serverSocket.accept();
-                trata = new TrataConexao(connection, nl);
-                Thread trataConexao = new Thread(trata);
-                trataConexao.start();
-                System.out.println("Thread para tratar conexão iniciada");
+                Socket connection = serverSocket.accept();
+                System.out.println("Cliente conectado!");
+                TrataConexao trata = new TrataConexao(connection);
+                trata.run();
             }
         } catch (IOException e) {
             e.printStackTrace();
