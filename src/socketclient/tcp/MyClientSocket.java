@@ -31,7 +31,8 @@ public class MyClientSocket {
             if (opcaoTipoDeJogo == 0) {
                 preparaClienteParaJogoIndividual(scan);
             } else if (opcaoTipoDeJogo == 1) {
-                System.out.println("Ainda não implementado");
+                System.out.print("\n");
+                System.out.println("Não conseguimos implementar a tempo");
             }
 
             dos.close();
@@ -47,7 +48,7 @@ public class MyClientSocket {
         while (opcao == 10) {
             Scanner scan = new Scanner(System.in);
             System.out.println("0 - Jogo individual");
-            System.out.println("1 - Multiplayer");
+            System.out.println("1 - 2 jogadores");
             System.out.print("Digite a opcao: ");
             try {
                 opcao = scan.nextInt();
