@@ -23,7 +23,6 @@ public class TrataConexao {
     public void start() {
         try {
             System.out.println("Configurando streams");
-            System.out.flush();
             dos = new DataOutputStream(connection.getOutputStream());
             dis = new DataInputStream(connection.getInputStream());
             int opcaoTipoDeJogo;
@@ -32,7 +31,7 @@ public class TrataConexao {
             if (opcaoTipoDeJogo == 0) {
                 preparaServidorParaJogoIndividual();
             } else if (opcaoTipoDeJogo == 1) {
-                System.out.println("Ainda não implementado");
+                System.out.println("O servidor ainda não está preparado para jogo com 2 jogadores");
             }
 
             if (dis != null) {
@@ -78,7 +77,6 @@ public class TrataConexao {
 
     private int recebePalpite() throws IOException {
         System.out.println("Aguardando palpite do cliente");
-        System.out.flush();
         return dis.readInt();
     }
 
@@ -134,34 +132,32 @@ public class TrataConexao {
         }
         if (listaNumerosAcertados.length() > 0) {
             dos.writeUTF(listaNumerosAcertados.toString());
+            dos.flush();
             System.out.println("O servidor enviou a lista de números acertados para o cliente");
         } else {
             dos.writeUTF("Nenhum número acertado até o momento :(");
+            dos.flush();
             System.out.println("O servidor informou que não há números acertados até o momento para o cliente");
         }
     }
 
     private String recebeNickName() throws IOException {
         System.out.println("Aguardando nickname do cliente");
-        System.out.flush();
         return dis.readUTF();
     }
 
     private int recebeOpcaoDePartida() throws IOException {
         System.out.println("Aguardando opção de partida do cliente");
-        System.out.flush();
         return dis.readInt();
     }
 
     private int recebeOpcaoTipoDeJogo() throws IOException {
         System.out.println("Aguardando opção de tipo de jogo do cliente");
-        System.out.flush();
         return dis.readInt();
     }
 
     private int recebeOpcaoDeRodada() throws IOException {
         System.out.println("Aguardando opção de rodada do cliente");
-        System.out.flush();
         return dis.readInt();
     }
 
@@ -171,16 +167,20 @@ public class TrataConexao {
         if (qtdMoscas == 3) {
             resultado = 200;
             dos.writeInt(resultado);
+            dos.flush();
             System.out.println("O servidor enviou o resultado para o cliente");
 
             dos.writeUTF("Parabéns " + nickname + "! Número acertado!\n" + "Você levou " + qtdRodadas + " rodada(s) para acertar.");
+            dos.flush();
             System.out.println("O servidor identificou o vencedor e enviou para o cliente");
         } else {
             resultado = 100;
             dos.writeInt(resultado);
+            dos.flush();
             System.out.println("O servidor enviou o resultado para o cliente");
 
             dos.writeUTF(listaPalpite);
+            dos.flush();
             System.out.println("O servidor enviou a lista de palpites para o cliente");
         }
         return resultado;

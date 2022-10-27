@@ -28,7 +28,7 @@ public class MyClientSocket {
                 preparaClienteParaJogoIndividual(scan);
             } else if (opcaoTipoDeJogo == 1) {
                 System.out.print("\n");
-                System.out.println("Não conseguimos implementar a tempo");
+                System.out.println("Não conseguimos implementar a tempo :(");
             }
 
             dos.close();
