@@ -1,5 +1,7 @@
 package socketserver.tcp;
 
+import socketserver.AppConstants;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,7 +26,7 @@ public class TrataConexao {
             System.out.flush();
             dos = new DataOutputStream(connection.getOutputStream());
             dis = new DataInputStream(connection.getInputStream());
-            int opcaoTipoDeJogo = 0;
+            int opcaoTipoDeJogo;
 
             opcaoTipoDeJogo = recebeOpcaoTipoDeJogo();
             if (opcaoTipoDeJogo == 0) {
@@ -41,7 +43,8 @@ public class TrataConexao {
             }
             connection.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Houve um problema entre a comunicação do cliente com o servidor");
+            System.out.println("Esperando por conexões na porta " + AppConstants.SERVER_PORT);
         }
     }
 
@@ -62,17 +65,14 @@ public class TrataConexao {
     private int[] getQtdTirosEmoscas(String numeroAlvoString, String palpiteString) {
         int qtdTiros = 0;
         int qtdMoscas = 0;
-
         for (int i = 0; i < 3; i++) {
             String digitoAlvoAtual = String.valueOf(numeroAlvoString.charAt(i));
             String digitoPalpiteAtual = String.valueOf(palpiteString.charAt(i));
-
             if (palpiteString.contains(digitoAlvoAtual)) {
                 if (!digitoPalpiteAtual.equals(digitoAlvoAtual)) qtdTiros++;
                 else qtdMoscas++;
             }
         }
-
         return new int[]{qtdTiros, qtdMoscas};
     }
 
@@ -83,18 +83,18 @@ public class TrataConexao {
     }
 
     private void preparaServidorParaJogoIndividual() throws IOException {
-        int opcaoDeJogo = 0;
-        List<int[]> numerosAcertadosMap = new ArrayList<>();
+        int opcaoDePartida = 0;
+        List<int[]> numerosAcertadosList = new ArrayList<>();
 
         String nickName = recebeNickName();
 
-        while (opcaoDeJogo != 2) {
+        while (opcaoDePartida != 2) {
             int qtdRodadas = 0;
-            int opcaoDePartida = 0;
+            int opcaoDeRodada = 0;
             String listaPalpite = "";
             String numeroAlvoString = String.valueOf(getNumberTarget());
 
-            while (opcaoDePartida != 2) {
+            while (opcaoDeRodada != 2) {
                 qtdRodadas++;
                 int palpite = recebePalpite();
                 int[] tirosEmoscas = getQtdTirosEmoscas(numeroAlvoString, String.valueOf(palpite));
@@ -102,39 +102,38 @@ public class TrataConexao {
                 int qtdMoscas = tirosEmoscas[1];
                 listaPalpite += palpite + " - " + qtdTiros + "T" + qtdMoscas + "M\n";
                 int resultado = mandaResultado(qtdMoscas, qtdRodadas, listaPalpite, nickName);
-
                 if (resultado == 200) {
-                    opcaoDePartida = 2;
-                    numerosAcertadosMap.add(new int[]{Integer.parseInt(numeroAlvoString), qtdRodadas});
-                } else opcaoDePartida = recebeOpcaoDePartida();
-
-                while (opcaoDePartida == 1) {
-                    mandaListaNumerosAcertados(numerosAcertadosMap);
-                    opcaoDePartida = recebeOpcaoDePartida();
+                    opcaoDeRodada = 2;
+                    numerosAcertadosList.add(new int[]{Integer.parseInt(numeroAlvoString), qtdRodadas});
+                } else opcaoDeRodada = recebeOpcaoDeRodada();
+                while (opcaoDeRodada == 1) {
+                    mandaListaNumerosAcertados(numerosAcertadosList);
+                    opcaoDeRodada = recebeOpcaoDeRodada();
                 }
             }
 
-            opcaoDeJogo = recebeOpcaoDeJogo();
-
-            while (opcaoDeJogo == 1) {
-                mandaListaNumerosAcertados(numerosAcertadosMap);
-                opcaoDeJogo = recebeOpcaoDeJogo();
+            opcaoDePartida = recebeOpcaoDePartida();
+            while (opcaoDePartida == 1) {
+                mandaListaNumerosAcertados(numerosAcertadosList);
+                opcaoDePartida = recebeOpcaoDePartida();
             }
         }
 
     }
 
     private void mandaListaNumerosAcertados(List<int[]> numerosAcertadosList) throws IOException {
-        String listaNumerosAcertados = "";
+        StringBuilder listaNumerosAcertados = new StringBuilder();
 
         for (int i = 0; i < numerosAcertadosList.size(); i++) {
             int[] numeroErodada = numerosAcertadosList.get(i);
             if (i != numerosAcertadosList.size() - 1)
-                listaNumerosAcertados += "Numero: " + numeroErodada[0] + " | QtdRodadas: " + numeroErodada[1] + "\n";
-            else listaNumerosAcertados += "Numero: " + numeroErodada[0] + " | QtdRodadas: " + numeroErodada[1];
+                listaNumerosAcertados.append("Numero: ").append(numeroErodada[0]).
+                        append(" | QtdRodadas: ").append(numeroErodada[1]).append("\n");
+            else listaNumerosAcertados.append("Numero: ").append(numeroErodada[0])
+                    .append(" | QtdRodadas: ").append(numeroErodada[1]);
         }
-        if (!listaNumerosAcertados.isEmpty()) {
-            dos.writeUTF(listaNumerosAcertados);
+        if (listaNumerosAcertados.length() > 0) {
+            dos.writeUTF(listaNumerosAcertados.toString());
             System.out.println("O servidor enviou a lista de números acertados para o cliente");
         } else {
             dos.writeUTF("Nenhum número acertado até o momento :(");
@@ -148,8 +147,8 @@ public class TrataConexao {
         return dis.readUTF();
     }
 
-    private int recebeOpcaoDeJogo() throws IOException {
-        System.out.println("Aguardando opção de jogo do cliente");
+    private int recebeOpcaoDePartida() throws IOException {
+        System.out.println("Aguardando opção de partida do cliente");
         System.out.flush();
         return dis.readInt();
     }
@@ -160,8 +159,8 @@ public class TrataConexao {
         return dis.readInt();
     }
 
-    private int recebeOpcaoDePartida() throws IOException {
-        System.out.println("Aguardando opção de partida do cliente");
+    private int recebeOpcaoDeRodada() throws IOException {
+        System.out.println("Aguardando opção de rodada do cliente");
         System.out.flush();
         return dis.readInt();
     }

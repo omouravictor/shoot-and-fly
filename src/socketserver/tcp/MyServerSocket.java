@@ -8,16 +8,12 @@ import java.net.Socket;
 
 public class MyServerSocket {
 
-    public MyServerSocket() {
-    }
-
     public void start() {
         try {
             ServerSocket serverSocket = new ServerSocket(AppConstants.SERVER_PORT);
             System.out.println("O servidor está executando");
             System.out.println("Esperando por conexões na porta " + AppConstants.SERVER_PORT);
-            boolean connected = true;
-            while (connected) {
+            while (true) {
                 Socket connection = serverSocket.accept();
                 System.out.print("\n");
                 System.out.println("Cliente conectado!");

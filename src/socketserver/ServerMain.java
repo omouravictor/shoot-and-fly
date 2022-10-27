@@ -8,12 +8,9 @@ import socketserver.tcp.MyServerSocket;
 
 public class ServerMain {
 
-    public ServerMain() {
-    }
-
     public MyServerSocket mySocket;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         ServerMain serverMain = new ServerMain();
         serverMain.initServerSocket();
     }

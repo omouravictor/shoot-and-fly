@@ -8,24 +8,20 @@ import java.util.Scanner;
 
 public class MyClientSocket {
 
-    private DataInputStream dis = null;
-    private DataOutputStream dos = null;
-    private Socket connection;
+    private final DataInputStream dis;
+    private final DataOutputStream dos;
+    private final Socket connection;
 
-    public MyClientSocket(String serverIp, int port) {
-        try {
-            connection = new Socket(serverIp, port);
-            dos = new DataOutputStream(connection.getOutputStream());
-            dis = new DataInputStream(connection.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public MyClientSocket(String serverIp, int port) throws IOException {
+        connection = new Socket(serverIp, port);
+        dos = new DataOutputStream(connection.getOutputStream());
+        dis = new DataInputStream(connection.getInputStream());
     }
 
     public void start() {
         Scanner scan = new Scanner(System.in);
         try {
-            int opcaoTipoDeJogo = 0;
+            int opcaoTipoDeJogo;
 
             opcaoTipoDeJogo = mandaOpcaoTipoDeJogo();
             if (opcaoTipoDeJogo == 0) {
@@ -39,7 +35,7 @@ public class MyClientSocket {
             dis.close();
             connection.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Houve um erro no servidor :(");
         }
     }
 
@@ -56,27 +52,27 @@ public class MyClientSocket {
     }
 
     private void preparaClienteParaJogoIndividual(Scanner scan) throws IOException {
-        int opcaoDeJogo = 0;
+        int opcaoDePartida = 0;
 
         mandaNickName(scan);
 
-        while (opcaoDeJogo != 2) {
-            int opcaoDePartida = 0;
-            while (opcaoDePartida != 2) {
+        while (opcaoDePartida != 2) {
+            int opcaoDeRodada = 0;
+            while (opcaoDeRodada != 2) {
                 mandaPalpite();
                 int resultado = recebeResultado();
-                if (resultado == 200) opcaoDePartida = 2;
-                else opcaoDePartida = mandaOpcaoDeRodada();
-                while (opcaoDePartida == 1) {
+                if (resultado == 200) opcaoDeRodada = 2;
+                else opcaoDeRodada = mandaOpcaoDeRodada();
+                while (opcaoDeRodada == 1) {
                     recebeListaNumerosAcertados();
-                    opcaoDePartida = mandaOpcaoDeRodada();
+                    opcaoDeRodada = mandaOpcaoDeRodada();
                 }
             }
             System.out.print("\n");
-            opcaoDeJogo = mandaOpcaoDePartida();
-            while (opcaoDeJogo == 1) {
+            opcaoDePartida = mandaOpcaoDePartida();
+            while (opcaoDePartida == 1) {
                 recebeListaNumerosAcertados();
-                opcaoDeJogo = mandaOpcaoDePartida();
+                opcaoDePartida = mandaOpcaoDePartida();
             }
         }
     }
