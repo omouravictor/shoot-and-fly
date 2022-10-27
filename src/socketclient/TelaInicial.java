@@ -7,7 +7,6 @@ package socketclient;
 import socketclient.tcp.MyClientSocket;
 
 import java.util.InputMismatchException;
-import java.util.Scanner;
 
 public class TelaInicial {
 
@@ -26,7 +25,7 @@ public class TelaInicial {
         try {
             System.out.println("Iniciando em localhost porta 10010..");
             MyClientSocket myClientSocket = new MyClientSocket("localhost", 10010);
-            myClientSocket.run();
+            myClientSocket.start();
         } catch (NumberFormatException nfe) {
             System.out.println("Problema ao conectar ao servidor");
         } catch (InputMismatchException e) {

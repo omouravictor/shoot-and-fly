@@ -22,10 +22,18 @@ public class MyClientSocket {
         }
     }
 
-    public void run() {
+    public void start() {
         Scanner scan = new Scanner(System.in);
         try {
-            prepareClientForIndividualGame(scan);
+            int opcaoTipoDeJogo = 0;
+
+            opcaoTipoDeJogo = mandaOpcaoTipoDeJogo();
+            if (opcaoTipoDeJogo == 0) {
+                preparaClienteParaJogoIndividual(scan);
+            } else if (opcaoTipoDeJogo == 1) {
+                System.out.println("Ainda não implementado");
+            }
+
             dos.close();
             dis.close();
             connection.close();
@@ -34,7 +42,33 @@ public class MyClientSocket {
         }
     }
 
-    private void prepareClientForIndividualGame(Scanner scan) throws IOException {
+    private int mandaOpcaoTipoDeJogo() throws IOException {
+        int opcao = 10;
+        while (opcao == 10) {
+            Scanner scan = new Scanner(System.in);
+            System.out.println("0 - Jogo individual");
+            System.out.println("1 - Multiplayer");
+            System.out.print("Digite a opcao: ");
+            try {
+                opcao = scan.nextInt();
+                if (opcao < 0 || opcao > 1) {
+                    System.out.print("\n");
+                    System.out.println("Opção inválida!");
+                    System.out.print("\n");
+                    opcao = 10;
+                }
+            } catch (Exception e) {
+                System.out.print("\n");
+                System.out.println("Entrada inválida!");
+                System.out.print("\n");
+            }
+        }
+        dos.writeInt(opcao);
+        dos.flush();
+        return opcao;
+    }
+
+    private void preparaClienteParaJogoIndividual(Scanner scan) throws IOException {
         int opcaoDeJogo = 0;
 
         mandaNickName(scan);

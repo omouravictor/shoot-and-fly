@@ -25,7 +25,7 @@ public class MyServerSocket {
                 System.out.print("\n");
                 System.out.println("Cliente conectado!");
                 TrataConexao trata = new TrataConexao(connection);
-                trata.run();
+                trata.start();
             }
         } catch (IOException e) {
             e.printStackTrace();

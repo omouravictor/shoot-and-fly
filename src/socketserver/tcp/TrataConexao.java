@@ -18,6 +18,33 @@ public class TrataConexao {
         this.connection = conn;
     }
 
+    public void start() {
+        try {
+            System.out.println("Configurando streams");
+            System.out.flush();
+            dos = new DataOutputStream(connection.getOutputStream());
+            dis = new DataInputStream(connection.getInputStream());
+            int opcaoTipoDeJogo = 0;
+
+            opcaoTipoDeJogo = recebeOpcaoTipoDeJogo();
+            if (opcaoTipoDeJogo == 0) {
+                preparaServidorParaJogoIndividual();
+            } else if (opcaoTipoDeJogo == 1) {
+                System.out.println("Ainda não implementado");
+            }
+
+            if (dis != null) {
+                dis.close();
+            }
+            if (dos != null) {
+                dos.close();
+            }
+            connection.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public int getNumberTarget() {
         Random rand = new Random();
         int digito1 = rand.nextInt((9 - 1) + 1) + 1;
@@ -55,9 +82,10 @@ public class TrataConexao {
         return dis.readInt();
     }
 
-    private void prepareServerForIndividualGame() throws IOException {
+    private void preparaServidorParaJogoIndividual() throws IOException {
         int opcaoDeJogo = 0;
         List<int[]> numerosAcertadosMap = new ArrayList<>();
+
         String nickName = recebeNickName();
 
         while (opcaoDeJogo != 2) {
@@ -78,24 +106,25 @@ public class TrataConexao {
                 if (resultado == 200) {
                     opcaoDePartida = 2;
                     numerosAcertadosMap.add(new int[]{Integer.parseInt(numeroAlvoString), qtdRodadas});
-                } else opcaoDePartida = getOpcaoDePartidaFromCliente();
+                } else opcaoDePartida = recebeOpcaoDePartida();
 
                 while (opcaoDePartida == 1) {
-                    retornaNumerosAcertados(numerosAcertadosMap);
-                    opcaoDePartida = getOpcaoDePartidaFromCliente();
+                    mandaListaNumerosAcertados(numerosAcertadosMap);
+                    opcaoDePartida = recebeOpcaoDePartida();
                 }
             }
 
-            opcaoDeJogo = getOpcaoDeJogoFromCliente();
+            opcaoDeJogo = recebeOpcaoDeJogo();
 
             while (opcaoDeJogo == 1) {
-                retornaNumerosAcertados(numerosAcertadosMap);
-                opcaoDeJogo = getOpcaoDeJogoFromCliente();
+                mandaListaNumerosAcertados(numerosAcertadosMap);
+                opcaoDeJogo = recebeOpcaoDeJogo();
             }
         }
+
     }
 
-    private void retornaNumerosAcertados(List<int[]> numerosAcertadosList) throws IOException {
+    private void mandaListaNumerosAcertados(List<int[]> numerosAcertadosList) throws IOException {
         String listaNumerosAcertados = "";
 
         for (int i = 0; i < numerosAcertadosList.size(); i++) {
@@ -119,13 +148,19 @@ public class TrataConexao {
         return dis.readUTF();
     }
 
-    private int getOpcaoDeJogoFromCliente() throws IOException {
+    private int recebeOpcaoDeJogo() throws IOException {
         System.out.println("Aguardando opção de jogo do cliente");
         System.out.flush();
         return dis.readInt();
     }
 
-    private int getOpcaoDePartidaFromCliente() throws IOException {
+    private int recebeOpcaoTipoDeJogo() throws IOException {
+        System.out.println("Aguardando opção de tipo de jogo do cliente");
+        System.out.flush();
+        return dis.readInt();
+    }
+
+    private int recebeOpcaoDePartida() throws IOException {
         System.out.println("Aguardando opção de partida do cliente");
         System.out.flush();
         return dis.readInt();
@@ -150,26 +185,5 @@ public class TrataConexao {
             System.out.println("O servidor enviou a lista de palpites para o cliente");
         }
         return resultado;
-    }
-
-    public void run() {
-        try {
-            System.out.println("Configurando streams");
-            System.out.flush();
-            dos = new DataOutputStream(connection.getOutputStream());
-            dis = new DataInputStream(connection.getInputStream());
-
-            prepareServerForIndividualGame();
-
-            if (dis != null) {
-                dis.close();
-            }
-            if (dos != null) {
-                dos.close();
-            }
-            connection.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
