@@ -18,11 +18,12 @@ public class ClientMain {
 
     private void initConexaoServidor() {
         try {
-            System.out.println("Iniciando em localhost porta 10010..");
+            System.out.println("Iniciando em localhost porta " + AppConstants.SERVER_PORT + "..");
             MyClientSocket myClientSocket = new MyClientSocket("localhost", AppConstants.SERVER_PORT);
             myClientSocket.start();
         } catch (Exception e) {
-            System.out.println("Problema ao conectar ao servidor, tente novamente.");
+            System.out.println("Houve um problema ao tentar conectar com o servidor, tente novamente.");
+            System.out.println("Certifique-se que o servidor está rodando.");
         }
     }
 
