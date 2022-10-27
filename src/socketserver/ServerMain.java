@@ -20,11 +20,7 @@ public class ServerMain {
 
     private void initServerSocket() {
         mySocket = new MyServerSocket();
-        mySocket.run();
-    }
-
-    private void disconnect() {
-        mySocket.disconnect();
+        mySocket.start();
     }
 
 }

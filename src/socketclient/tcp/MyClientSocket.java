@@ -47,22 +47,8 @@ public class MyClientSocket {
         int opcao = 10;
         while (opcao == 10) {
             Scanner scan = new Scanner(System.in);
-            System.out.println("0 - Jogo individual");
-            System.out.println("1 - 2 jogadores");
-            System.out.print("Digite a opcao: ");
-            try {
-                opcao = scan.nextInt();
-                if (opcao < 0 || opcao > 1) {
-                    System.out.print("\n");
-                    System.out.println("Opção inválida!");
-                    System.out.print("\n");
-                    opcao = 10;
-                }
-            } catch (Exception e) {
-                System.out.print("\n");
-                System.out.println("Entrada inválida!");
-                System.out.print("\n");
-            }
+            showMenuTipoDeJogo();
+            opcao = getOpcaoTipoDeJogo(opcao, scan);
         }
         dos.writeInt(opcao);
         dos.flush();
@@ -80,17 +66,17 @@ public class MyClientSocket {
                 mandaPalpite();
                 int resultado = recebeResultado();
                 if (resultado == 200) opcaoDePartida = 2;
-                else opcaoDePartida = mandaOpcaoDePartida();
+                else opcaoDePartida = mandaOpcaoDeRodada();
                 while (opcaoDePartida == 1) {
                     recebeListaNumerosAcertados();
-                    opcaoDePartida = mandaOpcaoDePartida();
+                    opcaoDePartida = mandaOpcaoDeRodada();
                 }
             }
             System.out.print("\n");
-            opcaoDeJogo = manOpcaoDeJogo();
+            opcaoDeJogo = mandaOpcaoDePartida();
             while (opcaoDeJogo == 1) {
                 recebeListaNumerosAcertados();
-                opcaoDeJogo = manOpcaoDeJogo();
+                opcaoDeJogo = mandaOpcaoDePartida();
             }
         }
     }
@@ -139,6 +125,18 @@ public class MyClientSocket {
         dos.flush();
     }
 
+    private int mandaOpcaoDeRodada() throws IOException {
+        int opcao = 10;
+        while (opcao == 10) {
+            Scanner scan = new Scanner(System.in);
+            showMenuDeRodada();
+            opcao = getOpcao(opcao, scan);
+        }
+        dos.writeInt(opcao);
+        dos.flush();
+        return opcao;
+    }
+
     private int mandaOpcaoDePartida() throws IOException {
         int opcao = 10;
         while (opcao == 10) {
@@ -151,15 +149,20 @@ public class MyClientSocket {
         return opcao;
     }
 
-    private int manOpcaoDeJogo() throws IOException {
-        int opcao = 10;
-        while (opcao == 10) {
-            Scanner scan = new Scanner(System.in);
-            showMenuDeJogo();
-            opcao = getOpcao(opcao, scan);
+    private int getOpcaoTipoDeJogo(int opcao, Scanner scan) {
+        try {
+            opcao = scan.nextInt();
+            if (opcao < 0 || opcao > 1) {
+                System.out.print("\n");
+                System.out.println("Opção inválida!");
+                System.out.print("\n");
+                opcao = 10;
+            }
+        } catch (Exception e) {
+            System.out.print("\n");
+            System.out.println("Entrada inválida!");
+            System.out.print("\n");
         }
-        dos.writeInt(opcao);
-        dos.flush();
         return opcao;
     }
 
@@ -180,17 +183,23 @@ public class MyClientSocket {
         return opcao;
     }
 
-    private void showMenuDeJogo() {
+    private void showMenuDePartida() {
         System.out.println("0 - Nova rodada");
         System.out.println("1 - Ver números acertados");
         System.out.println("2 - Encerrar jogo");
         System.out.print("Digite a opcao: ");
     }
 
-    private void showMenuDePartida() {
+    private void showMenuDeRodada() {
         System.out.println("0 - Novo palpite");
         System.out.println("1 - Ver números acertados");
         System.out.println("2 - Desistir");
+        System.out.print("Digite a opcao: ");
+    }
+
+    private void showMenuTipoDeJogo() {
+        System.out.println("0 - Jogo individual");
+        System.out.println("1 - 2 jogadores");
         System.out.print("Digite a opcao: ");
     }
 
