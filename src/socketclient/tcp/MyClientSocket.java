@@ -35,26 +35,27 @@ public class MyClientSocket {
     }
 
     private void prepareClientForIndividualGame(Scanner scan) throws IOException {
-        int opcao = 0;
+        int opcaoDeJogo = 0;
 
         mandaNickName(scan);
 
-        while (opcao != 2) {
-            int continuaPartida = 0;
-            while (continuaPartida != 2) {
-                mandaPalpite(scan);
+        while (opcaoDeJogo != 2) {
+            int opcaoDePartida = 0;
+            while (opcaoDePartida != 2) {
+                mandaPalpite();
                 int resultado = recebeResultado();
-                if (resultado == 200) continuaPartida = 2;
-                else continuaPartida = retornaEscolhaDeContinuaPartida(scan);
-                while (continuaPartida == 1) {
+                if (resultado == 200) opcaoDePartida = 2;
+                else opcaoDePartida = mandaOpcaoDePartida();
+                while (opcaoDePartida == 1) {
                     recebeListaNumerosAcertados();
-                    continuaPartida = retornaEscolhaDeContinuaPartida(scan);
+                    opcaoDePartida = mandaOpcaoDePartida();
                 }
             }
-            opcao = retornaOpcaoPrincipal(scan);
-            while (opcao == 1) {
+            System.out.print("\n");
+            opcaoDeJogo = manOpcaoDeJogo();
+            while (opcaoDeJogo == 1) {
                 recebeListaNumerosAcertados();
-                opcao = retornaOpcaoPrincipal(scan);
+                opcaoDeJogo = manOpcaoDeJogo();
             }
         }
     }
@@ -74,34 +75,87 @@ public class MyClientSocket {
         dos.flush();
     }
 
-    public void mandaPalpite(Scanner scan) throws IOException {
-        System.out.print("\n");
-        System.out.print("Informe seu palpite (numero de 3 dígitos diferentes): ");
-        int palpite = scan.nextInt();
+    public void mandaPalpite() throws IOException {
+        int palpite = 0;
+        while (palpite == 0) {
+            Scanner scan = new Scanner(System.in);
+            System.out.print("\n");
+            System.out.print("Informe seu palpite (numero de 3 dígitos diferentes): ");
+            try {
+                palpite = scan.nextInt();
+                String palpiteString = String.valueOf(palpite);
+                if (palpiteString.length() != 3) {
+                    System.out.println("O numero deve ter 3 dígitos (todos diferentes)");
+                    palpite = 0;
+                } else {
+                    char digito1 = palpiteString.charAt(0);
+                    char digito2 = palpiteString.charAt(1);
+                    char digito3 = palpiteString.charAt(2);
+                    if (!(digito1 != digito2 && digito1 != digito3 && digito3 != digito2)) {
+                        System.out.println("O numero deve ter 3 dígitos (todos diferentes)");
+                        palpite = 0;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Entrada inválida!");
+            }
+        }
         dos.writeInt(palpite);
         dos.flush();
     }
 
-    private int retornaEscolhaDeContinuaPartida(Scanner scan) throws IOException {
-        System.out.println("0 - Novo palpite");
-        System.out.println("1 - Ver números acertados");
-        System.out.println("2 - Desistir");
-        System.out.print("Digite a opcao: ");
-        int continuaPartida = scan.nextInt();
-        dos.writeInt(continuaPartida);
+    private int mandaOpcaoDePartida() throws IOException {
+        int opcao = 10;
+        while (opcao == 10) {
+            Scanner scan = new Scanner(System.in);
+            System.out.println("0 - Novo palpite");
+            System.out.println("1 - Ver números acertados");
+            System.out.println("2 - Desistir");
+            System.out.print("Digite a opcao: ");
+            try {
+                opcao = scan.nextInt();
+                if (opcao < 0 || opcao > 2) {
+                    System.out.print("\n");
+                    System.out.println("Opção inválida!");
+                    System.out.print("\n");
+                    opcao = 10;
+                }
+            } catch (Exception e) {
+                System.out.print("\n");
+                System.out.println("Entrada inválida!");
+                System.out.print("\n");
+            }
+        }
+        dos.writeInt(opcao);
         dos.flush();
-        return continuaPartida;
+        return opcao;
     }
 
-    private int retornaOpcaoPrincipal(Scanner scan) throws IOException {
-        System.out.println("0 - Nova partida");
-        System.out.println("1 - Ver números acertados");
-        System.out.println("2 - Encerrar jogo");
-        System.out.print("Digite a opcao: ");
-        int continuaJogo = scan.nextInt();
-        dos.writeInt(continuaJogo);
+    private int manOpcaoDeJogo() throws IOException {
+        int opcao = 10;
+        while (opcao == 10) {
+            Scanner scan = new Scanner(System.in);
+            System.out.println("0 - Nova partida");
+            System.out.println("1 - Ver números acertados");
+            System.out.println("2 - Encerrar jogo");
+            System.out.print("Digite a opcao: ");
+            try {
+                opcao = scan.nextInt();
+                if (opcao < 0 || opcao > 2) {
+                    System.out.print("\n");
+                    System.out.println("Opção inválida!");
+                    System.out.print("\n");
+                    opcao = 10;
+                }
+            } catch (Exception e) {
+                System.out.print("\n");
+                System.out.println("Entrada inválida!");
+                System.out.print("\n");
+            }
+        }
+        dos.writeInt(opcao);
         dos.flush();
-        return continuaJogo;
+        return opcao;
     }
 
     private int recebeResultado() throws IOException {
@@ -111,7 +165,6 @@ public class MyClientSocket {
             System.out.print("\n");
             String mensagemDeVitoria = dis.readUTF();
             System.out.println(mensagemDeVitoria);
-            System.out.print("\n");
         } else {
             String listaPalpite = dis.readUTF();
             System.out.println("Lista de palpites:\n" + listaPalpite);

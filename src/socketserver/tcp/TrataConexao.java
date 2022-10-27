@@ -4,8 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class TrataConexao {
@@ -18,9 +18,18 @@ public class TrataConexao {
         this.connection = conn;
     }
 
-    public int getRandomNumberBetween(int min, int max) {
+    public int getNumberTarget() {
         Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
+        int digito1 = rand.nextInt((9 - 1) + 1) + 1;
+        int digito2 = digito1;
+        while (digito2 == digito1) {
+            digito2 = rand.nextInt((9 - 1) + 1) + 1;
+        }
+        int digito3 = digito2;
+        while (digito3 == digito2 || digito3 == digito1) {
+            digito3 = rand.nextInt((9 - 1) + 1) + 1;
+        }
+        return Integer.parseInt(digito1 + "" + digito2 + "" + digito3);
     }
 
     private int[] getQtdTirosEmoscas(String numeroAlvoString, String palpiteString) {
@@ -47,53 +56,56 @@ public class TrataConexao {
     }
 
     private void prepareServerForIndividualGame() throws IOException {
-        int opcao = 0;
-        Map<Integer, Integer> numerosAcertadosMap = new HashMap<>();
+        int opcaoDeJogo = 0;
+        List<int[]> numerosAcertadosMap = new ArrayList<>();
         String nickName = recebeNickName();
 
-        while (opcao != 2) {
+        while (opcaoDeJogo != 2) {
             int qtdRodadas = 0;
-            int continuaPartida = 0;
+            int opcaoDePartida = 0;
             String listaPalpite = "";
-//            String numeroAlvoString = String.valueOf(getRandomNumberBetween(100, 999));
-            String numeroAlvoString = String.valueOf(100);
+            String numeroAlvoString = String.valueOf(getNumberTarget());
 
-            while (continuaPartida != 2) {
+            while (opcaoDePartida != 2) {
                 qtdRodadas++;
                 int palpite = recebePalpite();
-
                 int[] tirosEmoscas = getQtdTirosEmoscas(numeroAlvoString, String.valueOf(palpite));
                 int qtdTiros = tirosEmoscas[0];
                 int qtdMoscas = tirosEmoscas[1];
                 listaPalpite += palpite + " - " + qtdTiros + "T" + qtdMoscas + "M\n";
-
                 int resultado = mandaResultado(qtdMoscas, qtdRodadas, listaPalpite, nickName);
+
                 if (resultado == 200) {
-                    continuaPartida = 2;
-                    numerosAcertadosMap.put(Integer.valueOf(numeroAlvoString), qtdRodadas);
-                } else continuaPartida = getContinuaPartidaFromCliente();
+                    opcaoDePartida = 2;
+                    numerosAcertadosMap.add(new int[]{Integer.parseInt(numeroAlvoString), qtdRodadas});
+                } else opcaoDePartida = getOpcaoDePartidaFromCliente();
 
-                while (continuaPartida == 1) {
+                while (opcaoDePartida == 1) {
                     retornaNumerosAcertados(numerosAcertadosMap);
-                    continuaPartida = getContinuaPartidaFromCliente();
+                    opcaoDePartida = getOpcaoDePartidaFromCliente();
                 }
-
             }
-            opcao = getContinuaJogoFromCliente();
-            while (opcao == 1) {
+
+            opcaoDeJogo = getOpcaoDeJogoFromCliente();
+
+            while (opcaoDeJogo == 1) {
                 retornaNumerosAcertados(numerosAcertadosMap);
-                opcao = getContinuaJogoFromCliente();
+                opcaoDeJogo = getOpcaoDeJogoFromCliente();
             }
         }
     }
 
-    private void retornaNumerosAcertados(Map<Integer, Integer> numerosAcertadosMap) throws IOException {
-        final String[] listaNumerosAcertados = {""};
-        numerosAcertadosMap.forEach((numero, rodadas) -> {
-            listaNumerosAcertados[0] += "Numero: " + numero + " | QtdRodadas: " + rodadas + "\n";
-        });
-        if (!listaNumerosAcertados[0].isEmpty()) {
-            dos.writeUTF(listaNumerosAcertados[0]);
+    private void retornaNumerosAcertados(List<int[]> numerosAcertadosList) throws IOException {
+        String listaNumerosAcertados = "";
+
+        for (int i = 0; i < numerosAcertadosList.size(); i++) {
+            int[] numeroErodada = numerosAcertadosList.get(i);
+            if (i != numerosAcertadosList.size() - 1)
+                listaNumerosAcertados += "Numero: " + numeroErodada[0] + " | QtdRodadas: " + numeroErodada[1] + "\n";
+            else listaNumerosAcertados += "Numero: " + numeroErodada[0] + " | QtdRodadas: " + numeroErodada[1];
+        }
+        if (!listaNumerosAcertados.isEmpty()) {
+            dos.writeUTF(listaNumerosAcertados);
             System.out.println("O servidor enviou a lista de números acertados para o cliente");
         } else {
             dos.writeUTF("Nenhum número acertado até o momento :(");
@@ -107,14 +119,14 @@ public class TrataConexao {
         return dis.readUTF();
     }
 
-    private int getContinuaJogoFromCliente() throws IOException {
+    private int getOpcaoDeJogoFromCliente() throws IOException {
         System.out.println("Aguardando opção de jogo do cliente");
         System.out.flush();
         return dis.readInt();
     }
 
-    private int getContinuaPartidaFromCliente() throws IOException {
-        System.out.println("Aguardando opção de continuar partida do cliente");
+    private int getOpcaoDePartidaFromCliente() throws IOException {
+        System.out.println("Aguardando opção de partida do cliente");
         System.out.flush();
         return dis.readInt();
     }
@@ -142,7 +154,6 @@ public class TrataConexao {
 
     public void run() {
         try {
-            System.out.print("\n");
             System.out.println("Configurando streams");
             System.out.flush();
             dos = new DataOutputStream(connection.getOutputStream());

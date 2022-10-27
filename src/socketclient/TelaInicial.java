@@ -9,21 +9,20 @@ import socketclient.tcp.MyClientSocket;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class TelaInicial implements NetworkListener {
+public class TelaInicial {
 
     public TelaInicial() {
     }
 
     public static void main(String args[]) {
 
-        Scanner scan = new Scanner(System.in);
         TelaInicial telaInicial = new TelaInicial();
 
-        telaInicial.initConexaoServidor(scan);
+        telaInicial.initConexaoServidor();
         System.exit(0);
     }
 
-    private void initConexaoServidor(Scanner scan) {
+    private void initConexaoServidor() {
         try {
             System.out.println("Iniciando em localhost porta 10010..");
             MyClientSocket myClientSocket = new MyClientSocket("localhost", 10010);
@@ -35,8 +34,4 @@ public class TelaInicial implements NetworkListener {
         }
     }
 
-    @Override
-    public void networkMessage(int messageType, String msg) {
-        System.out.println("networkMessage: " + msg);
-    }
 }

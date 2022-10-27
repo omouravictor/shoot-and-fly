@@ -6,24 +6,20 @@ package socketserver;
 
 import socketserver.tcp.MyServerSocket;
 
-public class TelaInicial implements NetworkListener {
+public class TelaInicial {
 
     public TelaInicial() {
     }
 
-    //Referência Global para a thread que controla o servidor TCP
     public MyServerSocket mySocket;
 
     public static void main(String args[]) {
-
         TelaInicial telaInicial = new TelaInicial();
-
         telaInicial.initServerSocket();
-
     }
 
     private void initServerSocket() {
-        mySocket = new MyServerSocket(this);
+        mySocket = new MyServerSocket();
         mySocket.run();
     }
 
@@ -31,8 +27,4 @@ public class TelaInicial implements NetworkListener {
         mySocket.disconnect();
     }
 
-    @Override
-    public void networkMessage(int messageType, String msg) {
-        System.out.println("networkMessage: " + msg);
-    }
 }

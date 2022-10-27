@@ -1,7 +1,6 @@
 package socketserver.tcp;
 
 import socketserver.AppConstants;
-import socketserver.NetworkListener;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,10 +10,8 @@ public class MyServerSocket {
 
     private boolean connected = false;
     private ServerSocket serverSocket = null;
-    private NetworkListener nl;
 
-    public MyServerSocket(NetworkListener nl) {
-        this.nl = nl;
+    public MyServerSocket() {
     }
 
     public void run() {
@@ -25,6 +22,7 @@ public class MyServerSocket {
             connected = true;
             while (connected) {
                 Socket connection = serverSocket.accept();
+                System.out.print("\n");
                 System.out.println("Cliente conectado!");
                 TrataConexao trata = new TrataConexao(connection);
                 trata.run();
@@ -49,6 +47,5 @@ public class MyServerSocket {
             System.out.println("Conexão encerrada");
         }
     }
-
 
 }
