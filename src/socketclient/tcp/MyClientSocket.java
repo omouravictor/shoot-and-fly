@@ -143,23 +143,8 @@ public class MyClientSocket {
         int opcao = 10;
         while (opcao == 10) {
             Scanner scan = new Scanner(System.in);
-            System.out.println("0 - Novo palpite");
-            System.out.println("1 - Ver números acertados");
-            System.out.println("2 - Desistir");
-            System.out.print("Digite a opcao: ");
-            try {
-                opcao = scan.nextInt();
-                if (opcao < 0 || opcao > 2) {
-                    System.out.print("\n");
-                    System.out.println("Opção inválida!");
-                    System.out.print("\n");
-                    opcao = 10;
-                }
-            } catch (Exception e) {
-                System.out.print("\n");
-                System.out.println("Entrada inválida!");
-                System.out.print("\n");
-            }
+            showMenuDePartida();
+            opcao = getOpcao(opcao, scan);
         }
         dos.writeInt(opcao);
         dos.flush();
@@ -170,27 +155,43 @@ public class MyClientSocket {
         int opcao = 10;
         while (opcao == 10) {
             Scanner scan = new Scanner(System.in);
-            System.out.println("0 - Nova partida");
-            System.out.println("1 - Ver números acertados");
-            System.out.println("2 - Encerrar jogo");
-            System.out.print("Digite a opcao: ");
-            try {
-                opcao = scan.nextInt();
-                if (opcao < 0 || opcao > 2) {
-                    System.out.print("\n");
-                    System.out.println("Opção inválida!");
-                    System.out.print("\n");
-                    opcao = 10;
-                }
-            } catch (Exception e) {
-                System.out.print("\n");
-                System.out.println("Entrada inválida!");
-                System.out.print("\n");
-            }
+            showMenuDeJogo();
+            opcao = getOpcao(opcao, scan);
         }
         dos.writeInt(opcao);
         dos.flush();
         return opcao;
+    }
+
+    private int getOpcao(int opcao, Scanner scan) {
+        try {
+            opcao = scan.nextInt();
+            if (opcao < 0 || opcao > 2) {
+                System.out.print("\n");
+                System.out.println("Opção inválida!");
+                System.out.print("\n");
+                opcao = 10;
+            }
+        } catch (Exception e) {
+            System.out.print("\n");
+            System.out.println("Entrada inválida!");
+            System.out.print("\n");
+        }
+        return opcao;
+    }
+
+    private void showMenuDeJogo() {
+        System.out.println("0 - Nova rodada");
+        System.out.println("1 - Ver números acertados");
+        System.out.println("2 - Encerrar jogo");
+        System.out.print("Digite a opcao: ");
+    }
+
+    private void showMenuDePartida() {
+        System.out.println("0 - Novo palpite");
+        System.out.println("1 - Ver números acertados");
+        System.out.println("2 - Desistir");
+        System.out.print("Digite a opcao: ");
     }
 
     private int recebeResultado() throws IOException {

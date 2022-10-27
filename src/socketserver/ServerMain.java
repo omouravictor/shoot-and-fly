@@ -6,16 +6,16 @@ package socketserver;
 
 import socketserver.tcp.MyServerSocket;
 
-public class TelaInicial {
+public class ServerMain {
 
-    public TelaInicial() {
+    public ServerMain() {
     }
 
     public MyServerSocket mySocket;
 
     public static void main(String args[]) {
-        TelaInicial telaInicial = new TelaInicial();
-        telaInicial.initServerSocket();
+        ServerMain serverMain = new ServerMain();
+        serverMain.initServerSocket();
     }
 
     private void initServerSocket() {
